@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Nova Movimentação de Equipamentos</h1>
+
+<form method="POST" id="transferForm">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Dados da Movimentação</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="transfer_number" class="form-label">Número do Recibo</label>
+                    <input type="text" class="form-control" value="Gerado automaticamente" disabled>
+                    <small class="form-text text-muted">O número será gerado automaticamente ao salvar</small>
+                </div>
+                <div class="col-md-4">
+                    <label for="date" class="form-label">Data</label>
+                    <input type="text" class="form-control" id="currentDateTime" disabled>
+                </div>
+                <div class="col-md-4">
+                    <label for="movement_type" class="form-label">Tipo de Movimentação *</label>
+                    <select class="form-select" id="movement_type" name="movement_type" required>
+                        <option value="">Selecione...</option>
+                        <option value="Entrega">Entrega</option>
+                        <option value="Retirada">Retirada</option>
+                        <option value="Transferência">Transferência</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="unit_id" class="form-label">Unidade *</label>
+                    <select class="form-select" id="unit_id" name="unit_id" required>
+                        <option value="">Selecione a unidade...</option>
+                        {% for unit in units %}
+                        <option value="{{ unit.id }}">{{ unit.code }} - {{ unit.description }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="origin_sector" class="form-label">Setor de Origem *</label>
+                    <input type="text" class="form-control uppercase" id="origin_sector" name="origin_sector" required>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="destination_sector" class="form-label">Setor de Destino *</label>
+                    <input type="text" class="form-control uppercase" id="destination_sector" name="destination_sector" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="sender" class="form-label">Responsável pela Entrega *</label>
+                    <input type="text" class="form-control uppercase" id="sender" name="sender" required>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="receiver" class="form-label">Responsável pelo Recebimento *</label>
+                    <input type="text" class="form-control uppercase" id="receiver" name="receiver" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="observation" class="form-label">Observações</label>
+                    <textarea class="form-control uppercase" id="observation" name="observation" rows="2"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Equipamentos</h5>
+            <button type="button" class="btn btn-light btn-sm" id="addEquipment">
+                <i class="fas fa-plus"></i> Adicionar Equipamento
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="equipments">
+                <div class="equipment-item border-bottom pb-3 mb-3">
+                    <div class="row mb-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Descrição do Equipamento *</label>
+                            <input type="text" class="form-control uppercase" name="description[]" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Marca/Modelo</label>
+                            <input type="text" class="form-control" name="brand_model[]">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Número de Série</label>
+                            <input type="text" class="form-control" name="serial_number[]">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Nº Patrimônio *</label>
+                            <input type="text" class="form-control patrimony" name="patrimony_number[]" maxlength="8" required pattern="[0-9]{8}" title="8 dígitos numéricos">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Estado *</label>
+                            <input type="text" class="form-control uppercase" name="condition[]" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 d-flex justify-content-end">
+                            <button type="button" class="btn btn-danger btn-sm remove-equipment">
+                                <i class="fas fa-trash"></i> Remover
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <button type="submit" class="btn btn-success me-md-2">
+            <i class="fas fa-save"></i> Salvar Movimentação
+        </button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Cancelar
+        </a>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Preencher data e hora atual
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
+    document.getElementById('currentDateTime').value = formattedDate;
+
+    // Máscara para campos de patrimônio (8 dígitos)
+    function applyPatrimonyMask(input) {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 8);
+        });
+    }
+
+    // Converter para maiúsculas
+    function applyUppercase(input) {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    }
+
+    // Aplicar máscaras e uppercase aos campos existentes
+    document.querySelectorAll('.patrimony').forEach(applyPatrimonyMask);
+    document.querySelectorAll('.uppercase').forEach(applyUppercase);
+
+    // Adicionar equipamento
+    const addEquipmentBtn = document.getElementById('addEquipment');
+    if (addEquipmentBtn) {
+        addEquipmentBtn.addEventListener('click', function() {
+            const equipmentContainer = document.getElementById('equipments');
+            const newEquipment = document.createElement('div');
+            newEquipment.className = 'equipment-item border-bottom pb-3 mb-3';
+            newEquipment.innerHTML = `
+                <div class="row mb-2">
+                    <div class="col-md-4">
+                        <label class="form-label">Descrição do Equipamento *</label>
+                        <input type="text" class="form-control uppercase" name="description[]" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Marca/Modelo</label>
+                        <input type="text" class="form-control" name="brand_model[]">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Número de Série</label>
+                        <input type="text" class="form-control" name="serial_number[]">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Nº Patrimônio *</label>
+                        <input type="text" class="form-control patrimony" name="patrimony_number[]" maxlength="8" required pattern="[0-9]{8}" title="8 dígitos numéricos">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Estado *</label>
+                        <input type="text" class="form-control uppercase" name="condition[]" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 d-flex justify-content-end">
+                        <button type="button" class="btn btn-danger btn-sm remove-equipment">
+                            <i class="fas fa-trash"></i> Remover
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            equipmentContainer.appendChild(newEquipment);
+
+            // Aplicar máscaras aos novos campos
+            newEquipment.querySelectorAll('.patrimony').forEach(applyPatrimonyMask);
+            newEquipment.querySelectorAll('.uppercase').forEach(applyUppercase);
+
+            // Adicionar evento de remoção
+            const removeBtn = newEquipment.querySelector('.remove-equipment');
+            removeBtn.addEventListener('click', function() {
+                newEquipment.remove();
+            });
+        });
+    }
+
+    // Remover equipamento
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('remove-equipment')) {
+            e.target.closest('.equipment-item').remove();
+        }
+    });
+
+    // Validação do formulário
+    document.getElementById('transferForm').addEventListener('submit', function(e) {
+        const patrimonyInputs = document.querySelectorAll('.patrimony');
+        for (let input of patrimonyInputs) {
+            if (input.value.length !== 8) {
+                e.preventDefault();
+                alert('O número de patrimônio deve ter exatamente 8 dígitos!');
+                input.focus();
+                return;
+            }
+        }
+
+        // Validar se pelo menos um equipamento foi adicionado
+        const equipmentItems = document.querySelectorAll('.equipment-item');
+        if (equipmentItems.length === 0) {
+            e.preventDefault();
+            alert('É necessário adicionar pelo menos um equipamento!');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

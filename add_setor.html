@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-building"></i> Novo Setor</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="unidade_id" class="form-label">Unidade *</label>
+                                <select class="form-select" id="unidade_id" name="unidade_id" required>
+                                    <option value="">Selecione a unidade...</option>
+                                    {% for unidade in unidades %}
+                                    <option value="{{ unidade.id }}">{{ unidade.code }} - {{ unidade.description }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nomenclatura_id" class="form-label">Nomenclatura</label>
+                                <select class="form-select" id="nomenclatura_id" name="nomenclatura_id">
+                                    <option value="">Selecione a nomenclatura...</option>
+                                    {% for nomenclatura in nomenclaturas %}
+                                    <option value="{{ nomenclatura.id }}">{{ nomenclatura.codigo }} - {{ nomenclatura.descricao }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome do Setor *</label>
+                        <input type="text" class="form-control uppercase" id="nome" name="nome" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="responsavel" class="form-label">Responsável</label>
+                                <input type="text" class="form-control" id="responsavel" name="responsavel">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="telefone" class="form-label">Telefone</label>
+                                <input type="text" class="form-control" id="telefone" name="telefone" placeholder="(00) 00000-0000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success me-md-2">
+                            <i class="fas fa-save"></i> Cadastrar
+                        </button>
+                        <a href="{{ url_for('setores_management') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

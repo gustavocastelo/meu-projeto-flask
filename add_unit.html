@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-hospital"></i> Nova Unidade</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Código *</label>
+                        <input type="text" class="form-control uppercase" id="code" name="code" required
+                               placeholder="Ex: HPS, UPS, LAB">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descrição *</label>
+                        <input type="text" class="form-control" id="description" name="description" required
+                               placeholder="Ex: Hospital Principal, Unidade de Pronto Socorro">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Cadastrar Unidade
+                        </button>
+                        <a href="{{ url_for('units_management') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Converter para maiúsculas
+    const uppercaseInputs = document.querySelectorAll('.uppercase');
+    uppercaseInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+});
+</script>
+{% endblock %}

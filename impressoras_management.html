@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0"><i class="fas fa-print"></i> Gerenciamento de Impressoras</h2>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('add_impressora') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Nova Impressora
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulário de Pesquisa -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-search"></i> Pesquisar Impressoras</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="ip" class="form-label">IP</label>
+                    <input type="text" class="form-control" id="ip" name="ip" value="{{ ip }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="unidade_id" class="form-label">Unidade</label>
+                    <select class="form-select" id="unidade_id" name="unidade_id" onchange="carregarSetores(this.value)">
+                        <option value="">Todas as Unidades</option>
+                        {% for unidade in unidades %}
+                        <option value="{{ unidade.id }}" {% if unidade_id == unidade.id|string %}selected{% endif %}>
+                            {{ unidade.code }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="setor_id" class="form-label">Setor</label>
+                    <select class="form-select" id="setor_id" name="setor_id">
+                        <option value="">Todos os Setores</option>
+                        {% for setor in setores %}
+                        <option value="{{ setor.id }}" {% if setor_id == setor.id|string %}selected{% endif %}>
+                            {{ setor.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Todos</option>
+                        <option value="Ativa" {% if status == 'Ativa' %}selected{% endif %}>Ativa</option>
+                        <option value="Inativa" {% if status == 'Inativa' %}selected{% endif %}>Inativa</option>
+                        <option value="Manutenção" {% if status == 'Manutenção' %}selected{% endif %}>Manutenção</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Pesquisar
+                    </button>
+                    <a href="{{ url_for('impressoras_management') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        {% for status, count in stats %}
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="card {% if status == 'Ativa' %}bg-success text-white{% else %}bg-light{% endif %}">
+                <div class="card-body text-center p-3">
+                    <h6 class="card-title mb-1">{{ status }}</h6>
+                    <h3 class="mb-0">{{ count }}</h3>
+                    <small>Impressoras</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% for code, count in stats_unidade %}
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center p-3">
+                    <h6 class="card-title mb-1">{{ code }}</h6>
+                    <h3 class="mb-0">{{ count }}</h3>
+                    <small>Unidade</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Lista de Impressoras -->
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Lista de Impressoras</h5>
+            <span class="badge bg-light text-dark">{{ impressoras|length }} impressoras</span>
+        </div>
+        <div class="card-body">
+            {% if impressoras %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>IP</th>
+                            <th>Marca/Modelo</th>
+                            <th>Tipo</th>
+                            <th>Unidade</th>
+                            <th>Setor</th>
+                            <th>Status</th>
+                            <th>Última Manutenção</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for impressora in impressoras %}
+                        <tr>
+                            <td><code>{{ impressora.ip }}</code></td>
+                            <td>{{ impressora.marca }} {{ impressora.modelo }}</td>
+                            <td>{{ impressora.tipo }}</td>
+                            <td>{{ impressora.setor.unidade.code }}</td>
+                            <td>{{ impressora.setor.nome }}</td>
+                            <td>
+                                <span class="badge {% if impressora.status == 'Ativa' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ impressora.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if impressora.ultima_manutencao %}
+                                {{ impressora.ultima_manutencao.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('edit_impressora', impressora_id=impressora.id) }}"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ url_for('delete_impressora', impressora_id=impressora.id) }}"
+                                          method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Tem certeza que deseja excluir esta impressora?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-print fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Nenhuma impressora encontrada</h4>
+                <a href="{{ url_for('add_impressora') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Adicionar Impressora
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function carregarSetores(unidadeId) {
+    const setorSelect = document.getElementById('setor_id');
+
+    if (!unidadeId) {
+        setorSelect.innerHTML = '<option value="">Todos os Setores</option>';
+        return;
+    }
+
+    fetch(`/api/setores_por_unidade/${unidadeId}`)
+        .then(response => response.json())
+        .then(data => {
+            setorSelect.innerHTML = '<option value="">Todos os Setores</option>';
+            data.forEach(setor => {
+                setorSelect.innerHTML += `<option value="${setor.id}">${setor.nome}</option>`;
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar setores:', error);
+        });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Laudo Técnico - {{ laudo.patrimony_number }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .header h2 {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .header p {
+            margin: 3px 0;
+            color: #666;
+            font-size: 11px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+
+        .info-table th,
+        .info-table td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .info-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            width: 20%;
+        }
+
+        .equipment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 11px;
+        }
+
+        .equipment-table th,
+        .equipment-table td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .equipment-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .signatures {
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+
+        .signature-section {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 300px;
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        .section-title {
+            background-color: #f8f9fa;
+            padding: 5px;
+            font-weight: bold;
+            border-left: 4px solid #007bff;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        .small-text {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        @media print {
+            body {
+                margin: 15px;
+                font-size: 11px;
+            }
+
+            .header {
+                margin-bottom: 15px;
+            }
+
+            .signatures {
+                margin-top: 20px;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>FUNDAÇÃO HOSPITALAR DO ESTADO DE MINAS GERAIS - FHEMIG</h1>
+        <h2>LAUDO TÉCNICO DE BAIXA PATRIMONIAL</h2>
+        <p>Número do Patrimônio: <strong>{{ laudo.patrimony_number }}</strong></p>
+        <p>Data de Emissão: <strong>{{ now().strftime('%d/%m/%Y às %H:%M') }}</strong></p>
+    </div>
+
+    <div class="section-title">INFORMAÇÕES DO EQUIPAMENTO</div>
+
+    <table class="info-table">
+        <tr>
+            <th>Número de Patrimônio</th>
+            <td colspan="3"><strong>{{ laudo.patrimony_number }}</strong></td>
+        </tr>
+        <tr>
+            <th>Descrição do Equipamento</th>
+            <td colspan="3">{{ laudo.equipment_description }}</td>
+        </tr>
+        <tr>
+            <th>Setor de Origem</th>
+            <td>{{ laudo.origin_sector }}</td>
+            <th>Setor de Destino</th>
+            <td>{{ laudo.destination_sector }}</td>
+        </tr>
+        <tr>
+            <th>Unidade</th>
+            <td>{{ laudo.unit.code }} - {{ laudo.unit.description }}</td>
+            <th>Processo SEI</th>
+            <td>
+                {% if laudo.sei_record %}
+                {{ laudo.sei_record.sei_number }} - {{ laudo.sei_record.coordinator_name }}
+                {% else %}
+                N/A
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <div class="section-title">DADOS DO LAUDO</div>
+
+    <table class="equipment-table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Descrição</th>
+                <th>Marca/Modelo</th>
+                <th>Nº Série</th>
+                <th>Estado</th>
+                <th>Motivo da Baixa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>{{ laudo.equipment_description }}</td>
+                <td>N/A</td>
+                <td>N/A</td>
+                <td>INUTILIZÁVEL</td>
+                <td>DEFEITO IRREPARÁVEL</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section-title">JUSTIFICATIVA TÉCNICA</div>
+
+    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; font-size: 11px;">
+        <p><strong>Laudo emitido por:</strong> {{ laudo.user_name }} ({{ laudo.user_role }})</p>
+        <p><strong>Data da análise:</strong> {{ laudo.created_at.strftime('%d/%m/%Y') if laudo.created_at else 'N/A' }}</p>
+        <p><strong>Laudo:</strong> Equipamento considerado tecnologicamente obsoleto e economicamente inviável para reparo,
+        apresentando defeitos irreparáveis que impossibilitam seu funcionamento adequado. Recomenda-se a baixa patrimonial
+        conforme procedimentos estabelecidos.</p>
+    </div>
+
+    <div class="signatures">
+        <div class="signature-section">
+            <p>_________________________________________</p>
+            <p><strong>{{ laudo.user_name }}</strong></p>
+            <p>{{ laudo.user_role }} - FHEMIG</p>
+            <p>MAT: {{ session.get('user_masp', 'N/A') }}</p>
+        </div>
+
+        <div class="signature-section">
+            <p>_________________________________________</p>
+            <p><strong>Coordenador de Manutenção</strong></p>
+            <p>FHEMIG - {{ laudo.unit.code }}</p>
+            <p class="small-text">Concordo com a baixa patrimonial</p>
+        </div>
+
+        <div class="signature-section">
+            <p>_________________________________________</p>
+            <p><strong>Gestor Patrimonial</strong></p>
+            <p>FHEMIG - Patrimônio</p>
+            <p class="small-text">Baixa autorizada</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Documento gerado em {{ now().strftime('%d/%m/%Y às %H:%M') }} por {{ session.user_name }} ({{ session.user_role }})</p>
+        <p>Sistema de Gestão de Equipamentos - FHEMIG | Página 1 de 1</p>
+    </div>
+</body>
+</html>

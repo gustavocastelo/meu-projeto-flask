@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0"><i class="fas fa-users"></i> Gerenciamento de Usuários</h1>
+            <a href="{{ url_for('add_user') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Novo Usuário
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>MASP</th>
+                                <th>Cargo</th>
+                                <th>Último Login</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="badge bg-dark" title="Número de Matrícula">
+                                        {{ user.masp }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if user.role == 'Administrador' %}danger
+                                                          {% elif user.role == 'Coordenador' %}warning
+                                                          {% elif user.role == 'Técnico' %}primary
+                                                          {% elif user.role == 'Analista de Rede' %}info
+                                                          {% elif user.role == 'Assistente' %}secondary
+                                                          {% elif user.role == 'Recepcionista' %}success
+                                                          {% elif user.role == 'Estagiário' %}light text-dark
+                                                          {% else %}secondary{% endif %}" title="Cargo do usuário">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span title="Data do último acesso">
+                                        {{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Nunca' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if user.is_active %}success{% else %}danger{% endif %}" title="Status da conta">
+                                        {{ 'Ativo' if user.is_active else 'Inativo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-primary" title="Editar usuário">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if session.get('user_role') == 'Administrador' and user.id != session.get('user_id') %}
+                                        <form method="POST" action="{{ url_for('toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-{% if user.is_active %}warning{% else %}success{% endif %}"
+                                               onclick="return confirm('Tem certeza que deseja {{ 'desativar' if user.is_active else 'ativar' }} a conta de {{ user.name }}?')"
+                                               title="{{ 'Desativar' if user.is_active else 'Ativar' }} conta">
+                                                <i class="fas fa-{% if user.is_active %}times{% else %}check{% endif %}"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3">
+                    <h6>Legenda de Cargos:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-danger">Administrador</span>
+                        <span class="badge bg-warning text-dark">Coordenador</span>
+                        <span class="badge bg-primary">Técnico</span>
+                        <span class="badge bg-info">Analista de Rede</span>
+                        <span class="badge bg-secondary">Assistente</span>
+                        <span class="badge bg-success">Recepcionista</span>
+                        <span class="badge bg-light text-dark">Estagiário</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Estatísticas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ users|length }}</h5>
+                                <p class="card-text">Total de Usuários</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-success">{{ users|selectattr('is_active')|list|length }}</h5>
+                                <p class="card-text">Usuários Ativos</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-danger">{{ users|rejectattr('is_active')|list|length }}</h5>
+                                <p class="card-text">Usuários Inativos</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">{{ users|selectattr('role', 'equalto', 'Administrador')|list|length }}</h5>
+                                <p class="card-text">Administradores</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

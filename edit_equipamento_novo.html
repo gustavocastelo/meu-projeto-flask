@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit"></i> Editar Equipamento</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="equipamentoForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="patrimony_number" class="form-label">Número de Patrimônio *</label>
+                                <input type="text" class="form-control patrimony" id="patrimony_number"
+                                       name="patrimony_number" value="{{ equipamento.patrimony_number }}"
+                                       required maxlength="8" pattern="[0-9]{8}" readonly>
+                                <div class="form-text">Número de patrimônio não pode ser alterado</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="serial_number" class="form-label">Número de Série</label>
+                                <input type="text" class="form-control uppercase" id="serial_number"
+                                       name="serial_number" value="{{ equipamento.serial_number or '' }}"
+                                       placeholder="Digite o número de série">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="marca" class="form-label">Marca *</label>
+                                <input type="text" class="form-control uppercase" id="marca" name="marca"
+                                       value="{{ equipamento.marca }}" required placeholder="Ex: DELL, HP, LENOVO">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="modelo" class="form-label">Modelo *</label>
+                                <input type="text" class="form-control uppercase" id="modelo" name="modelo"
+                                       value="{{ equipamento.modelo }}" required placeholder="Ex: OPTIPLEX 3090">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="unidade_id" class="form-label">Unidade *</label>
+                                <select class="form-select" id="unidade_id" name="unidade_id" required
+                                        onchange="carregarSetores(this.value, '{{ equipamento.setor_id }}')">
+                                    <option value="">Selecione a unidade...</option>
+                                    {% for unidade in unidades %}
+                                    <option value="{{ unidade.id }}" {% if equipamento.unidade_id == unidade.id %}selected{% endif %}>
+                                        {{ unidade.code }} - {{ unidade.description }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="setor_id" class="form-label">Setor *</label>
+                                <select class="form-select" id="setor_id" name="setor_id" required>
+                                    <option value="">Carregando setores...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="data_aquisicao" class="form-label">Data de Aquisição</label>
+                                <input type="date" class="form-control" id="data_aquisicao" name="data_aquisicao"
+                                       value="{{ equipamento.data_aquisicao.strftime('%Y-%m-%d') if equipamento.data_aquisicao else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea class="form-control uppercase" id="observacoes" name="observacoes"
+                                  rows="3" placeholder="Informações adicionais">{{ equipamento.observacoes or '' }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success me-md-2">
+                            <i class="fas fa-save"></i> Atualizar
+                        </button>
+                        <a href="{{ url_for('equipamentos_novos') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function carregarSetores(unidadeId, selectedSetorId = null) {
+    const setorSelect = document.getElementById('setor_id');
+
+    if (!unidadeId) {
+        setorSelect.innerHTML = '<option value="">Primeiro selecione a unidade</option>';
+        setorSelect.disabled = true;
+        return;
+    }
+
+    fetch(`/api/setores_por_unidade/${unidadeId}`)
+        .then(response => response.json())
+        .then(data => {
+            setorSelect.innerHTML = '<option value="">Selecione o setor...</option>';
+            data.forEach(setor => {
+                const selected = selectedSetorId && setor.id == selectedSetorId ? 'selected' : '';
+                setorSelect.innerHTML += `<option value="${setor.id}" ${selected}>${setor.nome}</option>`;
+            });
+            setorSelect.disabled = false;
+        })
+        .catch(error => {
+            console.error('Erro ao carregar setores:', error);
+            setorSelect.innerHTML = '<option value="">Erro ao carregar setores</option>';
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Carregar setores ao iniciar
+    const unidadeId = document.getElementById('unidade_id').value;
+    const setorId = '{{ equipamento.setor_id }}';
+    if (unidadeId) {
+        carregarSetores(unidadeId, setorId);
+    }
+
+    // Converter para maiúsculas
+    const uppercaseInputs = document.querySelectorAll('.uppercase');
+    uppercaseInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+});
+</script>
+{% endblock %}

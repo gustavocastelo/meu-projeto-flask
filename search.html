@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Pesquisar Equipamentos</h1>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-search"></i> Filtros de Pesquisa</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">Tipo de Pesquisa</label>
+                    <select class="form-select" name="search_type" id="searchType">
+                        <option value="description" {% if search_type == 'description' %}selected{% endif %}>Descrição/Marca</option>
+                        <option value="patrimony" {% if search_type == 'patrimony' %}selected{% endif %}>Número de Patrimônio</option>
+                        <option value="sector" {% if search_type == 'sector' %}selected{% endif %}>Setor</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Unidade</label>
+                    <select class="form-select" name="unit_id" id="unitSelect">
+                        <option value="">Todas as Unidades</option>
+                        {% for unit in units %}
+                        <option value="{{ unit.id }}" {% if selected_unit == unit.id %}selected{% endif %}>
+                            {{ unit.code }} - {{ unit.description }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <div id="searchValueField">
+                        <label class="form-label">Termo de Pesquisa</label>
+                        <input type="text" class="form-control" name="search_value"
+                               placeholder="Digite o termo de pesquisa" value="{{ search_value }}"
+                               {% if search_type == 'sector' %}style="display: none;"{% endif %}>
+                    </div>
+
+                    <div id="sectorSelectField" {% if search_type != 'sector' %}style="display: none;"{% endif %}>
+                        <label class="form-label">Selecionar Setor</label>
+                        <select class="form-select" name="sector_name" id="sectorSelect">
+                            <option value="">Todos os Setores</option>
+                            {% for stat in sector_stats|sort(attribute='origin_sector') %}
+                            <option value="{{ stat.origin_sector }}" {% if selected_sector == stat.origin_sector %}selected{% endif %}>
+                                {{ stat.origin_sector }} ({{ stat.equipment_count }} equip.)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Pesquisar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Estatísticas de Setores -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Estatísticas por Setor</h5>
+        <span class="badge bg-light text-dark">{{ sector_stats|length }} setores encontrados</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Unidade</th>
+                        <th>Setor</th>
+                        <th>Quantidade de Equipamentos</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in sector_stats|sort(attribute='unit_code')|sort(attribute='origin_sector') %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-primary">{{ stat.unit_code }}</span>
+                            <br>
+                            <small class="text-muted">{{ stat.unit_description }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ stat.origin_sector }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if stat.equipment_count > 10 %}success{% elif stat.equipment_count > 5 %}warning{% else %}danger{% endif %}">
+                                {{ stat.equipment_count }} equipamento(s)
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="search_type" value="sector">
+                                <input type="hidden" name="unit_id" value="{{ stat.unit_id }}">
+                                <input type="hidden" name="sector_name" value="{{ stat.origin_sector }}">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> Ver Equipamentos
+                                </button>
+                            </form>
+                            <a href="{{ url_for('search') }}?unit_id={{ stat.unit_id }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-filter"></i> Filtrar Unidade
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">
+                            <i class="fas fa-inbox"></i> Nenhum setor encontrado
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if sector_stats %}
+        <div class="mt-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">{{ sector_stats|length }}</h5>
+                            <p class="card-text">Total de Setores</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">{{ sector_stats|sum(attribute='equipment_count') }}</h5>
+                            <p class="card-text">Total de Equipamentos</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title text-info">
+                                {{ (sector_stats|sum(attribute='equipment_count') / sector_stats|length)|round(1) if sector_stats|length > 0 else 0 }}
+                            </h5>
+                            <p class="card-text">Média por Setor</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">
+                                {{ (sector_stats|max(attribute='equipment_count')).equipment_count if sector_stats else 0 }}
+                            </h5>
+                            <p class="card-text">Maior Setor</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Resultados da Pesquisa -->
+{% if results %}
+<div class="card">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-list"></i> Resultados da Pesquisa
+            ({{ results|length }} equipamento{{ 's' if results|length != 1 }} encontrado{{ 's' if results|length != 1 }})
+        </h5>
+        <span class="badge bg-light text-dark">
+            {% if selected_sector %}Setor: {{ selected_sector }}{% endif %}
+            {% if selected_unit_name %} | Unidade: {{ selected_unit_name }}{% endif %}
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Marca/Modelo</th>
+                        <th>Nº Série</th>
+                        <th>Patrimônio</th>
+                        <th>Estado</th>
+                        <th>Setor</th>
+                        <th>Unidade</th>
+                        <th>Data Movimentação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for equipment in results %}
+                    <tr>
+                        <td>{{ equipment.description }}</td>
+                        <td>
+                            {% if equipment.brand_model %}
+                                <span class="badge bg-info">{{ equipment.brand_model }}</span>
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if equipment.serial_number %}
+                                <code>{{ equipment.serial_number }}</code>
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-dark">{{ equipment.patrimony_number }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if equipment.equipment_condition in ['BOM', 'EXCELENTE', 'OTIMO'] %}success
+                                {% elif equipment.equipment_condition in ['REGULAR', 'MEDIO'] %}warning
+                                {% elif equipment.equipment_condition in ['RUIM', 'DEFEITO'] %}danger
+                                {% else %}secondary{% endif %}">
+                                {{ equipment.equipment_condition }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ equipment.transfer.origin_sector }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ equipment.transfer.unit.code }}</span>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ equipment.transfer.date.strftime('%d/%m/%Y') }}</small>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('generate_pdf', transfer_id=equipment.transfer.id) }}"
+                               class="btn btn-sm btn-info" target="_blank" title="Ver Recibo">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                            <a href="{{ url_for('search') }}?unit_id={{ equipment.transfer.unit.id }}&search_type=sector&sector_name={{ equipment.transfer.origin_sector }}"
+                               class="btn btn-sm btn-warning" title="Ver todos do setor">
+                                <i class="fas fa-filter"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% elif search_performed %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> Nenhum equipamento encontrado com os critérios de pesquisa selecionados.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar/ocultar campos baseado no tipo de pesquisa
+    const searchType = document.getElementById('searchType');
+    const searchValueField = document.getElementById('searchValueField');
+    const sectorSelectField = document.getElementById('sectorSelectField');
+    const unitSelect = document.getElementById('unitSelect');
+
+    function toggleSearchFields() {
+        if (searchType.value === 'sector') {
+            searchValueField.style.display = 'none';
+            sectorSelectField.style.display = 'block';
+        } else {
+            searchValueField.style.display = 'block';
+            sectorSelectField.style.display = 'none';
+        }
+    }
+
+    searchType.addEventListener('change', toggleSearchFields);
+    toggleSearchFields(); // Executar na carga inicial
+
+    // Atualizar setores quando mudar a unidade
+    unitSelect.addEventListener('change', function() {
+        this.form.submit();
+    });
+
+    {% if computers_by_brand and computers_by_brand|length > 0 %}
+    // Código dos gráficos (se necessário)
+    {% endif %}
+});
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Log de Movimentações</h1>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nº Recibo</th>
+                        <th>Data</th>
+                        <th>Unidade</th>
+                        <th>Tipo</th>
+                        <th>Origem</th>
+                        <th>Destino</th>
+                        <th>Responsável Entrega</th>
+                        <th>Responsável Recebimento</th>
+                        <th>Equipamentos</th>
+                        <th>Usuário</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transfer in transfers %}
+                    <tr>
+                        <td>{{ transfer.transfer_number }}</td>
+                        <td>{{ transfer.date.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ transfer.unit.code }}</td>
+                        <td>{{ transfer.movement_type }}</td>
+                        <td>{{ transfer.origin_sector }}</td>
+                        <td>{{ transfer.destination_sector }}</td>
+                        <td>{{ transfer.sender }}</td>
+                        <td>{{ transfer.receiver }}</td>
+                        <td>{{ transfer.equipments|length }} item(ns)</td>
+                        <td>{{ transfer.creator.name }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ url_for('generate_pdf', transfer_id=transfer.id) }}"
+                                   class="btn btn-sm btn-info" target="_blank">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                {% if session.get('user_role') == 'Administrador' %}
+                                <a href="{{ url_for('delete_transfer', transfer_id=transfer.id) }}"
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Tem certeza que deseja excluir esta movimentação? Esta ação não pode ser desfeita!')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

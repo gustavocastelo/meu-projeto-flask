@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit"></i> Editar Garantia</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editGarantiaForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="patrimony_number" class="form-label">Número de Patrimônio</label>
+                                <input type="text" class="form-control" id="patrimony_number"
+                                       value="{{ garantia.patrimony_number }}" readonly>
+                                <div class="form-text">Número de patrimônio não pode ser alterado</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="equipamento" class="form-label">Equipamento *</label>
+                                <input type="text" class="form-control uppercase" id="equipamento" name="equipamento"
+                                       value="{{ garantia.equipamento }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="problema" class="form-label">Problema/Defeito *</label>
+                        <textarea class="form-control" id="problema" name="problema" rows="3" required>{{ garantia.problema }}</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_envio" class="form-label">Data de Envio *</label>
+                                <input type="date" class="form-control" id="data_envio" name="data_envio"
+                                       value="{{ garantia.data_envio.strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_retorno_prevista" class="form-label">Data Prevista de Retorno *</label>
+                                <input type="date" class="form-control" id="data_retorno_prevista" name="data_retorno_prevista"
+                                       value="{{ garantia.data_retorno_prevista.strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_retorno_efetivo" class="form-label">Data de Retorno Efetivo</label>
+                                <input type="date" class="form-control" id="data_retorno_efetivo" name="data_retorno_efetivo"
+                                       value="{% if garantia.data_retorno_efetivo %}{{ garantia.data_retorno_efetivo.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fornecedor" class="form-label">Fornecedor/Loja *</label>
+                                <input type="text" class="form-control uppercase" id="fornecedor" name="fornecedor"
+                                       value="{{ garantia.fornecedor }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status *</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="Enviado" {% if garantia.status == 'Enviado' %}selected{% endif %}>Enviado</option>
+                                    <option value="Em conserto" {% if garantia.status == 'Em conserto' %}selected{% endif %}>Em conserto</option>
+                                    <option value="Devolvido" {% if garantia.status == 'Devolvido' %}selected{% endif %}>Devolvido</option>
+                                    <option value="Cancelado" {% if garantia.status == 'Cancelado' %}selected{% endif %}>Cancelado</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="numero_nota_fiscal" class="form-label">Número da Nota Fiscal</label>
+                                <input type="text" class="form-control" id="numero_nota_fiscal" name="numero_nota_fiscal"
+                                       value="{{ garantia.numero_nota_fiscal or '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="numero_rastreio" class="form-label">Número de Rastreio</label>
+                                <input type="text" class="form-control" id="numero_rastreio" name="numero_rastreio"
+                                       value="{{ garantia.numero_rastreio or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações Adicionais</label>
+                        <textarea class="form-control" id="observacoes" name="observacoes" rows="2">{{ garantia.observacoes or '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-text">
+                            Registrado por: {{ garantia.usuario.name }}<br>
+                            Data de criação: {{ garantia.created_at.strftime('%d/%m/%Y %H:%M') }}<br>
+                            Última atualização: {{ garantia.updated_at.strftime('%d/%m/%Y %H:%M') }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success me-md-2">
+                            <i class="fas fa-save"></i> Atualizar Garantia
+                        </button>
+                        <a href="{{ url_for('garantias_management') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Converter para maiúsculas
+    const uppercaseInputs = document.querySelectorAll('.uppercase');
+    uppercaseInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+});
+</script>
+{% endblock %}

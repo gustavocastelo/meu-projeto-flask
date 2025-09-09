@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user"></i> Perfil do Usuário</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Nome:</strong> {{ user.name }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Email:</strong> {{ user.email }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Cargo:</strong> {{ user.role }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Último Login:</strong> {{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Nunca' }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Conta criada em:</strong> {{ user.created_at.strftime('%d/%m/%Y') }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Status:</strong>
+                        <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">
+                            {{ 'Ativo' if user.is_active else 'Inativo' }}
+                        </span>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <a href="{{ url_for('change_password') }}" class="btn btn-warning">
+                        <i class="fas fa-lock"></i> Alterar Senha
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

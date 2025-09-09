@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit"></i> Editar Laudo</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editLaudoForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="patrimony_number" class="form-label">Número de Patrimônio *</label>
+                                <input type="text" class="form-control patrimony" id="patrimony_number" name="patrimony_number"
+                                       value="{{ laudo.patrimony_number }}" required maxlength="8" pattern="[0-9]{8}"
+                                       title="8 dígitos numéricos" readonly>
+                                <div class="form-text">Número de patrimônio não pode ser alterado</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="origin_sector" class="form-label">Setor de Origem *</label>
+                                <input type="text" class="form-control uppercase" id="origin_sector" name="origin_sector"
+                                       value="{{ laudo.origin_sector }}" required placeholder="Digite o setor de origem">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="equipment_description" class="form-label">Descrição do Equipamento *</label>
+                                <input type="text" class="form-control uppercase" id="equipment_description" name="equipment_description"
+                                       value="{{ laudo.equipment_description }}" required placeholder="Digite a descrição do equipamento">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="destination_sector" class="form-label">Setor de Destino *</label>
+                                <input type="text" class="form-control uppercase" id="destination_sector" name="destination_sector"
+                                       value="{{ laudo.destination_sector }}" required placeholder="Digite o setor de destino">
+                                <div class="form-text">Setor padrão: PATRIMÔNIO (para baixa patrimonial)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="unit_id" class="form-label">Unidade *</label>
+                                <select class="form-select" id="unit_id" name="unit_id" required>
+                                    <option value="">Selecione a unidade...</option>
+                                    {% for unit in units %}
+                                    <option value="{{ unit.id }}" {% if laudo.unit_id == unit.id %}selected{% endif %}>
+                                        {{ unit.code }} - {{ unit.description }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sei_id" class="form-label">Processo SEI (Opcional)</label>
+                                <select class="form-select" id="sei_id" name="sei_id">
+                                    <option value="">Selecione um processo SEI...</option>
+                                    {% for sei in sei_records %}
+                                    <option value="{{ sei.id }}" {% if laudo.sei_id == sei.id %}selected{% endif %}>
+                                        {{ sei.sei_number }} - {{ sei.coordinator_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Opcional: vincule a um processo SEI existente</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-text">
+                            Data de criação: {{ laudo.created_at.strftime('%d/%m/%Y %H:%M') }}<br>
+                            Criado por: {{ laudo.user_name }} ({{ laudo.user_role }})
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success me-md-2">
+                            <i class="fas fa-save"></i> Atualizar Laudo
+                        </button>
+                        <a href="{{ url_for('laudo_management') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Converter para maiúsculas
+    const uppercaseInputs = document.querySelectorAll('.uppercase');
+    uppercaseInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+});
+</script>
+{% endblock %}

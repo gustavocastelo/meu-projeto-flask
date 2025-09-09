@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Recibo de Movimentação - {{ transfer.transfer_number }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin-bottom: 5px; }
+        .header p { margin: 0; color: #666; }
+        .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .info-table th, .info-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .info-table th { background-color: #f2f2f2; }
+        .equipment-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .equipment-table th, .equipment-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .equipment-table th { background-color: #f2f2f2; }
+        .signatures { margin-top: 50px; }
+        .signature-line { border-top: 1px solid #000; width: 300px; margin-bottom: 40px; }
+        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>FUNDAÇÃO HOSPITALAR DO ESTADO DE MINAS GERAIS - FHEMIG</h1>
+        <h2>RECIBO DE MOVIMENTAÇÃO DE EQUIPAMENTOS</h2>
+        <p>Número: <strong>{{ transfer.transfer_number }}</strong></p>
+        <p>Data: <strong>{{ transfer.date.strftime('%d/%m/%Y às %H:%M') }}</strong></p>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <th>Tipo de Movimentação</th>
+            <td>{{ transfer.movement_type }}</td>
+            <th>Unidade</th>
+            <td>{{ transfer.unit.code }} - {{ transfer.unit.description }}</td>
+        </tr>
+        <tr>
+            <th>Setor de Origem</th>
+            <td>{{ transfer.origin_sector }}</td>
+            <th>Setor de Destino</th>
+            <td>{{ transfer.destination_sector }}</td>
+        </tr>
+        <tr>
+            <th>Responsável pela Entrega</th>
+            <td>{{ transfer.sender }}</td>
+            <th>Responsável pelo Recebimento</th>
+            <td>{{ transfer.receiver }}</td>
+        </tr>
+        {% if transfer.observation %}
+        <tr>
+            <th>Observações</th>
+            <td colspan="3">{{ transfer.observation }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    <h3>Equipamentos Movimentados</h3>
+    <table class="equipment-table">
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th>Marca/Modelo</th>
+                <th>Nº de Série</th>
+                <th>Nº Patrimônio</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipment in transfer.equipments %}
+            <tr>
+                <td>{{ equipment.description }}</td>
+                <td>{{ equipment.brand_model or 'N/A' }}</td>
+                <td>{{ equipment.serial_number or 'N/A' }}</td>
+                <td>{{ equipment.patrimony_number }}</td>
+                <td>{{ equipment.equipment_condition }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="signatures">
+        <div style="float: left; width: 45%;">
+            <p>Responsável pela Entrega</p>
+            <div class="signature-line"></div>
+            <p>Nome: <strong>{{ transfer.sender }}</strong></p>
+        </div>
+        <div style="float: right; width: 45%;">
+            <p>Responsável pelo Recebimento</p>
+            <div class="signature-line"></div>
+            <p>Nome: <strong>{{ transfer.receiver }}</strong></p>
+        </div>
+        <div style="clear: both;"></div>
+    </div>
+
+    <div class="footer">
+        <p>Documento gerado em {{ now.strftime('%d/%m/%Y às %H:%M') }} por {{ session.user_name }} ({{ session.user_role }})</p>
+        <p>Sistema de Controle de Movimentação de Equipamentos - FHEMIG</p>
+    </div>
+</body>
+</html>

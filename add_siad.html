@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-desktop"></i> Novo SIAD</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="unidade_id" class="form-label">Unidade *</label>
+                                <select class="form-select" id="unidade_id" name="unidade_id" required onchange="carregarSetores(this.value)">
+                                    <option value="">Selecione a unidade...</option>
+                                    {% for unidade in unidades %}
+                                    <option value="{{ unidade.id }}">{{ unidade.code }} - {{ unidade.description }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="setor_id" class="form-label">Setor *</label>
+                                <select class="form-select" id="setor_id" name="setor_id" required disabled>
+                                    <option value="">Primeiro selecione a unidade</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ip" class="form-label">IP *</label>
+                                <input type="text" class="form-control" id="ip" name="ip" required placeholder="Ex: 192.168.1.100">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nomenclatura" class="form-label">Nomenclatura *</label>
+                                <input type="text" class="form-control uppercase" id="nomenclatura" name="nomenclatura" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="placa_rede_antiga" class="form-label">Placa de Rede Antiga</label>
+                                <input type="text" class="form-control" id="placa_rede_antiga" name="placa_rede_antiga">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="placa_rede_nova" class="form-label">Placa de Rede Nova</label>
+                                <input type="text" class="form-control" id="placa_rede_nova" name="placa_rede_nova">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status *</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="Ativo">Ativo</option>
+                                    <option value="Inativo">Inativo</option>
+                                    <option value="Manutenção">Manutenção</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success me-md-2">
+                            <i class="fas fa-save"></i> Cadastrar
+                        </button>
+                        <a href="{{ url_for('siads_management') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function carregarSetores(unidadeId) {
+    const setorSelect = document.getElementById('setor_id');
+
+    if (!unidadeId) {
+        setorSelect.innerHTML = '<option value="">Primeiro selecione a unidade</option>';
+        setorSelect.disabled = true;
+        return;
+    }
+
+    fetch(`/api/setores_por_unidade/${unidadeId}`)
+        .then(response => response.json())
+        .then(data => {
+            setorSelect.innerHTML = '<option value="">Selecione o setor...</option>';
+            data.forEach(setor => {
+                setorSelect.innerHTML += `<option value="${setor.id}">${setor.nome}</option>`;
+            });
+            setorSelect.disabled = false;
+        })
+        .catch(error => {
+            console.error('Erro ao carregar setores:', error);
+            setorSelect.innerHTML = '<option value="">Erro ao carregar setores</option>';
+        });
+}
+</script>
+{% endblock %}

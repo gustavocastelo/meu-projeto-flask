@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-user-edit"></i> Editar Usuário</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editUserForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nome Completo *</label>
+                                <input type="text" class="form-control" id="name" name="name"
+                                       value="{{ user.name }}" required placeholder="Digite o nome completo" title="Nome completo do usuário">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="masp" class="form-label">MASP *</label>
+                                <input type="text" class="form-control masp" id="masp" name="masp"
+                                       value="{{ user.masp }}" required maxlength="8" pattern="[0-9]{8}"
+                                       title="Número de 8 dígitos do MASP" placeholder="Digite o MASP (8 dígitos)">
+                                <div class="form-text">8 dígitos numéricos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       value="{{ user.email }}" required placeholder="exemplo@hospital.com" title="Endereço de email do usuário">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Cargo *</label>
+                                <select class="form-select" id="role" name="role" required onchange="toggleCustomRole()" title="Selecione o cargo do usuário">
+                                    <option value="">Selecione o cargo...</option>
+                                    <option value="Administrador" {% if user.role == 'Administrador' %}selected{% endif %}>Administrador</option>
+                                    <option value="Coordenador" {% if user.role == 'Coordenador' %}selected{% endif %}>Coordenador</option>
+                                    <option value="Técnico" {% if user.role == 'Técnico' %}selected{% endif %}>Técnico de Informática</option>
+                                    <option value="Analista de Rede" {% if user.role == 'Analista de Rede' %}selected{% endif %}>Analista de Rede</option>
+                                    <option value="Assistente" {% if user.role == 'Assistente' %}selected{% endif %}>Assistente Administrativo</option>
+                                    <option value="Recepcionista" {% if user.role == 'Recepcionista' %}selected{% endif %}>Recepcionista</option>
+                                    <option value="Estagiário" {% if user.role == 'Estagiário' %}selected{% endif %}>Estagiário</option>
+                                    <option value="custom" {% if user.role not in ['Administrador', 'Coordenador', 'Técnico', 'Analista de Rede', 'Assistente', 'Recepcionista', 'Estagiário'] %}selected{% endif %}>Outro Cargo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="customRoleField" {% if user.role not in ['Administrador', 'Coordenador', 'Técnico', 'Analista de Rede', 'Assistente', 'Recepcionista', 'Estagiário'] %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                        <label for="custom_role" class="form-label">Cargo *</label>
+                        <input type="text" class="form-control" id="custom_role" name="custom_role"
+                               value="{% if user.role not in ['Administrador', 'Coordenador', 'Técnico', 'Analista de Rede', 'Assistente', 'Recepcionista', 'Estagiário'] %}{{ user.role }}{% endif %}"
+                               placeholder="Digite o nome do cargo" title="Digite o nome do cargo personalizado">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label">Nova Senha</label>
+                                <input type="password" class="form-control" id="new_password" name="new_password"
+                                       placeholder="Deixe em branco para manter a senha atual" minlength="6" title="Nova senha de acesso (mínimo 6 caracteres)">
+                                <div class="form-text">Mínimo de 6 caracteres</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirmar Nova Senha</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                                       placeholder="Digite a senha novamente" minlength="6" title="Confirme a nova senha digitada acima">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-text">
+                            Status atual:
+                            <span class="badge bg-{% if user.is_active %}success{% else %}danger{% endif %}">
+                                {{ 'Ativo' if user.is_active else 'Inativo' }}
+                            </span>
+                            | Último login: {{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Nunca' }}
+                            | Data criação: {{ user.created_at.strftime('%d/%m/%Y') }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Atualizar Usuário
+                        </button>
+                        <a href="{{ url_for('users_management') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editUserForm');
+
+    // Máscara para MASP (8 dígitos)
+    function applyMaspMask(input) {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 8);
+        });
+    }
+
+    // Aplicar máscara MASP
+    document.querySelectorAll('.masp').forEach(applyMaspMask);
+
+    // Validação de confirmação de senha
+    form.addEventListener('submit', function(e) {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const masp = document.getElementById('masp').value;
+        const roleSelect = document.getElementById('role');
+        const customRoleField = document.getElementById('customRoleField');
+        const customRole = document.getElementById('custom_role');
+
+        if (newPassword && newPassword !== confirmPassword) {
+            e.preventDefault();
+            alert('As senhas não coincidem!');
+            document.getElementById('confirm_password').focus();
+            return;
+        }
+
+        // Validar MASP
+        if (masp.length !== 8) {
+            e.preventDefault();
+            alert('MASP deve ter exatamente 8 dígitos!');
+            document.getElementById('masp').focus();
+            return;
+        }
+
+        // Validar cargo customizado
+        if (roleSelect.value === 'custom' && (!customRole.value || customRole.value.trim() === '')) {
+            e.preventDefault();
+            alert('Por favor, digite o nome do cargo!');
+            customRole.focus();
+            return;
+        }
+    });
+});
+
+function toggleCustomRole() {
+    const roleSelect = document.getElementById('role');
+    const customRoleField = document.getElementById('customRoleField');
+    const customRole = document.getElementById('custom_role');
+
+    if (roleSelect.value === 'custom') {
+        customRoleField.style.display = 'block';
+        customRole.required = true;
+    } else {
+        customRoleField.style.display = 'none';
+        customRole.required = false;
+        customRole.value = '';
+    }
+}
+</script>
+{% endblock %}

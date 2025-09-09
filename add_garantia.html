@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-shield-alt"></i> Registrar Equipamento para Garantia</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="garantiaForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="patrimony_number" class="form-label">Número de Patrimônio *</label>
+                                <input type="text" class="form-control patrimony" id="patrimony_number" name="patrimony_number"
+                                       required maxlength="8" pattern="[0-9]{8}" title="8 dígitos numéricos"
+                                       placeholder="Digite o número de patrimônio">
+                                <div class="form-text">Digite o patrimônio e aguarde a busca automática</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="equipamento" class="form-label">Equipamento *</label>
+                                <input type="text" class="form-control uppercase" id="equipamento" name="equipamento" required
+                                       placeholder="Ex: Notebook Dell, Monitor LG, etc.">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="unidade_id" class="form-label">Unidade *</label>
+                                <select class="form-select" id="unidade_id" name="unidade_id" required>
+                                    <option value="">Selecione a unidade...</option>
+                                    {% for unidade in unidades %}
+                                    <option value="{{ unidade.id }}">{{ unidade.code }} - {{ unidade.description }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="setor_id" class="form-label">Setor *</label>
+                                <select class="form-select" id="setor_id" name="setor_id" required>
+                                    <option value="">Selecione o setor...</option>
+                                    {% for setor in setores %}
+                                    <option value="{{ setor.id }}">{{ setor.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="problema" class="form-label">Problema/Defeito *</label>
+                        <textarea class="form-control" id="problema" name="problema" rows="3" required
+                                  placeholder="Descreva detalhadamente o problema apresentado pelo equipamento"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_envio" class="form-label">Data de Envio *</label>
+                                <input type="date" class="form-control" id="data_envio" name="data_envio" required
+                                       value="{{ '%Y-%m-%d' | format(datetime.now()) if now else '' }}">
+                                       !-- value="{{ now().strftime('%Y-%m-%d') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_retorno_prevista" class="form-label">Data Prevista de Retorno *</label>
+                                <input type="date" class="form-control" id="data_retorno_prevista" name="data_retorno_prevista" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="fornecedor" class="form-label">Fornecedor/Loja *</label>
+                                <input type="text" class="form-control uppercase" id="fornecedor" name="fornecedor" required
+                                       placeholder="Nome do fornecedor ou loja">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="numero_nota_fiscal" class="form-label">Número da Nota Fiscal</label>
+                                <input type="text" class="form-control" id="numero_nota_fiscal" name="numero_nota_fiscal"
+                                       placeholder="Número da nota fiscal">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="numero_rastreio" class="form-label">Número de Rastreio</label>
+                                <input type="text" class="form-control" id="numero_rastreio" name="numero_rastreio"
+                                       placeholder="Código de rastreio">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações Adicionais</label>
+                        <textarea class="form-control" id="observacoes" name="observacoes" rows="2"
+                                  placeholder="Informações adicionais relevantes"></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success me-md-2">
+                            <i class="fas fa-save"></i> Registrar Garantia
+                        </button>
+                        <a href="{{ url_for('garantias_management') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para campo de patrimônio
+    const patrimonyInput = document.getElementById('patrimony_number');
+    if (patrimonyInput) {
+        patrimonyInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 8);
+        });
+
+        // Buscar informações do equipamento ao digitar o patrimônio
+        patrimonyInput.addEventListener('blur', function() {
+            const patrimony = this.value;
+            if (patrimony.length === 8) {
+                fetch(`/api/equipamento_info/${patrimony}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.equipamento) {
+                            document.getElementById('equipamento').value = data.equipamento;
+                            document.getElementById('unidade_id').value = data.unidade_id || '';
+                            document.getElementById('setor_id').value = data.setor_id || '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar equipamento:', error);
+                    });
+            }
+        });
+    }
+
+    // Converter para maiúsculas
+    const uppercaseInputs = document.querySelectorAll('.uppercase');
+    uppercaseInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+
+    // Definir data de retorno padrão (30 dias a partir de hoje)
+    const dataEnvio = document.getElementById('data_envio');
+    const dataRetorno = document.getElementById('data_retorno_prevista');
+
+    if (dataEnvio && dataRetorno) {
+        dataEnvio.addEventListener('change', function() {
+            const data = new Date(this.value);
+            data.setDate(data.getDate() + 30); // 30 dias prazo padrão
+            dataRetorno.value = data.toISOString().split('T')[0];
+        });
+    }
+});
+</script>
+{% endblock %}

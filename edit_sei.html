@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit"></i> Editar Processo SEI</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editSeiForm">
+                    <div class="mb-3">
+                        <label for="coordinator_name" class="form-label">Nome do Coordenador *</label>
+                        <input type="text" class="form-control uppercase" id="coordinator_name" name="coordinator_name"
+                               value="{{ sei_record.coordinator_name }}" required placeholder="Digite o nome do coordenador">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="sei_number" class="form-label">Número do SEI *</label>
+                        <input type="text" class="form-control uppercase" id="sei_number" name="sei_number"
+                               value="{{ sei_record.sei_number }}" required placeholder="Digite o número do SEI">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Local *</label>
+                        <input type="text" class="form-control uppercase" id="location" name="location"
+                               value="{{ sei_record.location }}" required placeholder="Digite o local">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cost_center" class="form-label">Centro de Custo *</label>
+                        <input type="text" class="form-control uppercase" id="cost_center" name="cost_center"
+                               value="{{ sei_record.cost_center }}" required placeholder="Digite o centro de custo">
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-text">
+                            Data de criação: {{ sei_record.created_at.strftime('%d/%m/%Y') }}<br>
+                            Criado por: {{ sei_record.creator.name }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Atualizar SEI
+                        </button>
+                        <a href="{{ url_for('sei_management') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Converter para maiúsculas
+    const uppercaseInputs = document.querySelectorAll('.uppercase');
+    uppercaseInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+});
+</script>
+{% endblock %}

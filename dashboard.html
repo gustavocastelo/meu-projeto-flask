@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+
+        <!-- Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title display-4">{{ total_equipments }}</h5>
+                        <p class="card-text">Equipamentos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title display-4">{{ total_transfers }}</h5>
+                        <p class="card-text">Movimentações</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-warning text-dark">
+                    <div class="card-body">
+                        <h5 class="card-title display-4">{{ total_garantias }}</h5>
+                        <p class="card-text">Garantias</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title display-4">{{ total_impressoras }}</h5>
+                        <p class="card-text">Impressoras</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Últimas Movimentações -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-history"></i> Últimas Movimentações</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_transfers %}
+                        <div class="list-group">
+                            {% for transfer in recent_transfers %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ transfer.transfer_number }}</h6>
+                                    <small>{{ transfer.date.strftime('%d/%m/%Y') if transfer.date else 'N/A' }}</small>
+                                </div>
+                                <p class="mb-1">{{ transfer.movement_type }} - {{ transfer.unit.code }}</p>
+                                <small>De: {{ transfer.origin_sector }} Para: {{ transfer.destination_sector }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">Nenhuma movimentação recente</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Garantias Próximas -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Garantias Próximas do Vencimento</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if garantias_proximas %}
+                        <div class="list-group">
+                            {% for garantia in garantias_proximas %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ garantia.patrimony_number }}</h6>
+                                    <small class="text-danger">{{ garantia.data_retorno_prevista.strftime('%d/%m/%Y') if garantia.data_retorno_prevista else 'N/A' }}</small>
+                                </div>
+                                <p class="mb-1">{{ garantia.equipamento }}</p>
+                                <small>Status: {{ garantia.status }} | Fornecedor: {{ garantia.fornecedor }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">Nenhuma garantia próxima do vencimento</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipamentos por Unidade -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Equipamentos por Unidade</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if equipments_by_unit %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Unidade</th>
+                                        <th>Descrição</th>
+                                        <th>Quantidade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for unit in equipments_by_unit %}
+                                    <tr>
+                                        <td><strong>{{ unit.code }}</strong></td>
+                                        <td>{{ unit.description }}</td>
+                                        <td><span class="badge bg-primary">{{ unit[2] }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">Nenhum dado disponível</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

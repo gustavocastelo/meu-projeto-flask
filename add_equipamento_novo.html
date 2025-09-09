@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-laptop"></i> Novo Equipamento</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="equipamentoForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="patrimony_number" class="form-label">Número de Patrimônio *</label>
+                                <input type="text" class="form-control patrimony" id="patrimony_number"
+                                       name="patrimony_number" required maxlength="8" pattern="[0-9]{8}"
+                                       title="8 dígitos numéricos" placeholder="Digite o número de patrimônio">
+                                <div class="form-text">8 dígitos numéricos</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="serial_number" class="form-label">Número de Série</label>
+                                <input type="text" class="form-control uppercase" id="serial_number"
+                                       name="serial_number" placeholder="Digite o número de série">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="marca" class="form-label">Marca *</label>
+                                <input type="text" class="form-control uppercase" id="marca" name="marca"
+                                       required placeholder="Ex: DELL, HP, LENOVO">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="modelo" class="form-label">Modelo *</label>
+                                <input type="text" class="form-control uppercase" id="modelo" name="modelo"
+                                       required placeholder="Ex: OPTIPLEX 3090, ELITEDESK 800">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="unidade_id" class="form-label">Unidade *</label>
+                                <select class="form-select" id="unidade_id" name="unidade_id" required
+                                        onchange="carregarSetores(this.value)">
+                                    <option value="">Selecione a unidade...</option>
+                                    {% for unidade in unidades %}
+                                    <option value="{{ unidade.id }}">{{ unidade.code }} - {{ unidade.description }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="setor_id" class="form-label">Setor *</label>
+                                <select class="form-select" id="setor_id" name="setor_id" required disabled>
+                                    <option value="">Primeiro selecione a unidade</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="data_aquisicao" class="form-label">Data de Aquisição</label>
+                                <input type="date" class="form-control" id="data_aquisicao" name="data_aquisicao">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea class="form-control uppercase" id="observacoes" name="observacoes"
+                                  rows="3" placeholder="Informações adicionais sobre o equipamento"></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success me-md-2">
+                            <i class="fas fa-save"></i> Cadastrar
+                        </button>
+                        <a href="{{ url_for('equipamentos_novos') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function carregarSetores(unidadeId) {
+    const setorSelect = document.getElementById('setor_id');
+
+    if (!unidadeId) {
+        setorSelect.innerHTML = '<option value="">Primeiro selecione a unidade</option>';
+        setorSelect.disabled = true;
+        return;
+    }
+
+    fetch(`/api/setores_por_unidade/${unidadeId}`)
+        .then(response => response.json())
+        .then(data => {
+            setorSelect.innerHTML = '<option value="">Selecione o setor...</option>';
+            data.forEach(setor => {
+                setorSelect.innerHTML += `<option value="${setor.id}">${setor.nome}</option>`;
+            });
+            setorSelect.disabled = false;
+        })
+        .catch(error => {
+            console.error('Erro ao carregar setores:', error);
+            setorSelect.innerHTML = '<option value="">Erro ao carregar setores</option>';
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para patrimônio
+    const patrimonyInput = document.getElementById('patrimony_number');
+    patrimonyInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 8);
+    });
+
+    // Converter para maiúsculas
+    const uppercaseInputs = document.querySelectorAll('.uppercase');
+    uppercaseInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+
+    // Validação do formulário
+    const form = document.getElementById('equipamentoForm');
+    form.addEventListener('submit', function(e) {
+        const patrimony = document.getElementById('patrimony_number').value;
+
+        if (patrimony.length !== 8) {
+            e.preventDefault();
+            alert('O número de patrimônio deve ter exatamente 8 dígitos!');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

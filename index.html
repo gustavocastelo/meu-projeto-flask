@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Sistema de Controle de Movimentação de Equipamentos</h1>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Nova Movimentação</h5>
+                        <p class="card-text">Registrar entrega, retirada ou transferência de equipamentos</p>
+                        <a href="{{ url_for('new_transfer') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Acessar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Pesquisar Equipamentos</h5>
+                        <p class="card-text">Buscar equipamentos por número de patrimônio ou descrição</p>
+                        <a href="{{ url_for('search') }}" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Acessar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Log de Movimentações</h5>
+                        <p class="card-text">Visualizar histórico completo de movimentações</p>
+                        <a href="{{ url_for('logs') }}" class="btn btn-primary">
+                            <i class="fas fa-history"></i> Acessar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="mt-5">Últimas Movimentações</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nº Recibo</th>
+                        <th>Data</th>
+                        <th>Unidade</th>
+                        <th>Tipo</th>
+                        <th>Origem</th>
+                        <th>Destino</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transfer in transfers[:5] %}
+                    <tr>
+                        <td>{{ transfer.transfer_number }}</td>
+                        <td>{{ transfer.date.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ transfer.unit.code }}</td>
+                        <td>{{ transfer.movement_type }}</td>
+                        <td>{{ transfer.origin_sector }}</td>
+                        <td>{{ transfer.destination_sector }}</td>
+                        <td>
+                            <a href="{{ url_for('generate_pdf', transfer_id=transfer.id) }}"
+                               class="btn btn-sm btn-danger" target="_blank">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

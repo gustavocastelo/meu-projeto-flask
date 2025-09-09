@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4"><i class="fas fa-chart-bar"></i> Relatórios</h1>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-cog"></i> Gerar Relatório</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('generate_report') }}">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="report_type" class="form-label">Tipo de Relatório</label>
+                            <select class="form-select" id="report_type" name="report_type" required>
+                                <option value="">Selecione o tipo...</option>
+                                <option value="transfers">Movimentações</option>
+                                <option value="equipments">Equipamentos</option>
+                                <option value="garantias">Garantias</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label">Data Inicial</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_date" class="form-label">Data Final</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="unit_id" class="form-label">Unidade</label>
+                            <select class="form-select" id="unit_id" name="unit_id">
+                                <option value="">Todas as Unidades</option>
+                                {% for unidade in unidades %}
+                                <option value="{{ unidade.id }}">{{ unidade.code }} - {{ unidade.description }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Gerar Relatório em PDF
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Relatório de Movimentações</h6>
+                        <ul class="small">
+                            <li>Lista todas as movimentações de equipamentos</li>
+                            <li>Filtro por data e unidade</li>
+                            <li>Inclui dados completos de cada movimentação</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Relatório de Garantias</h6>
+                        <ul class="small">
+                            <li>Lista todos os equipamentos em garantia</li>
+                            <li>Filtro por data de envio e unidade</li>
+                            <li>Inclui status e datas de retorno</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default dates
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    document.getElementById('start_date').value = firstDay.toISOString().split('T')[0];
+    document.getElementById('end_date').value = today.toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

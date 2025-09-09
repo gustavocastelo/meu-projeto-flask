@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-file-medical"></i> Cadastrar Novo Laudo</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="laudoForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="patrimony_number" class="form-label">Número de Patrimônio *</label>
+                                <input type="text" class="form-control patrimony" id="patrimony_number" name="patrimony_number"
+                                       required maxlength="8" pattern="[0-9]{8}" title="8 dígitos numéricos"
+                                       placeholder="Digite o número de patrimônio (8 dígitos)">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="origin_sector" class="form-label">Setor de Origem *</label>
+                                <input type="text" class="form-control uppercase" id="origin_sector" name="origin_sector" required
+                                       placeholder="Digite o setor de origem">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="equipment_description" class="form-label">Descrição do Equipamento *</label>
+                                <input type="text" class="form-control uppercase" id="equipment_description" name="equipment_description" required
+                                       placeholder="Digite a descrição do equipamento">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="destination_sector" class="form-label">Setor de Destino *</label>
+                                <input type="text" class="form-control uppercase" id="destination_sector" name="destination_sector"
+                                       value="PATRIMÔNIO" required placeholder="Digite o setor de destino">
+                                <div class="form-text">Setor padrão: PATRIMÔNIO (para baixa patrimonial)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="unit_id" class="form-label">Unidade *</label>
+                                <select class="form-select" id="unit_id" name="unit_id" required>
+                                    <option value="">Selecione a unidade...</option>
+                                    {% for unit in units %}
+                                    <option value="{{ unit.id }}">{{ unit.code }} - {{ unit.description }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sei_id" class="form-label">Processo SEI (Opcional)</label>
+                                <select class="form-select" id="sei_id" name="sei_id">
+                                    <option value="">Selecione um processo SEI...</option>
+                                    {% for sei in sei_records %}
+                                    <option value="{{ sei.id }}">{{ sei.sei_number }} - {{ sei.coordinator_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Opcional: vincule a um processo SEI existente</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success me-md-2">
+                            <i class="fas fa-save"></i> Cadastrar Laudo
+                        </button>
+                        <a href="{{ url_for('laudo_management') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'success' and 'Laudo cadastrado com sucesso' in message %}
+                    <div class="card mt-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-envelope"></i> Enviar Laudo por Email</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('send_laudo_email', laudo_id=laudo_id) }}">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="email" class="form-control" name="email"
+                                               required placeholder="digite@email.com" value="">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-warning w-100">
+                                            <i class="fas fa-paper-plane"></i> Enviar Email
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-text mt-2">Digite o email para enviar o laudo em PDF automaticamente</div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para campo de patrimônio
+    const patrimonyInput = document.getElementById('patrimony_number');
+    if (patrimonyInput) {
+        patrimonyInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 8);
+        });
+    }
+
+    // Converter para maiúsculas
+    const uppercaseInputs = document.querySelectorAll('.uppercase');
+    uppercaseInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+});
+</script>
+{% endblock %}
